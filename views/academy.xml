@@ -30,10 +30,12 @@
                         <group colspan="4">
                             <field name="name"/>
                             <field name="last_name"/>
+                            <field name="curp" placeholder="AACC901010HVZNLS00"/>
                             <field name="age"/>
                             <field name="create_date"/>
                             <field name="active"/>
                             <field name="partner_id"/>
+                            <field name="country"/>
                         </group>
                         <group>
                             <notebook>

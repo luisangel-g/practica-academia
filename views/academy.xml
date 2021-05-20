@@ -3,7 +3,7 @@
     <data>
         <record model="ir.ui.view" id="tree_student_id">
             <field name="name">academia.student.tree</field>
-            <field name="model">academia_student</field>
+            <field name="model">academia.student</field>
             <field name="type"></field>
             <field name="arch" type="xml">
                 <tree string="Listado de estudiantes">
@@ -16,7 +16,7 @@
         </record>
         <record model="ir.ui.view" id="academy_student_form">
             <field name="name">academia.student.form</field>
-            <field name="model">academia_student</field>
+            <field name="model">academia.student</field>
             <field name="type">form</field>
             <field name="arch" type="xml">
                 <form string="Listado de estudiantes">
@@ -58,12 +58,12 @@
         </record>
         <record model="ir.actions.act_window" id="act_student_academia">
             <field name="name">Registro de estudiantes</field>
-            <field name="res_model">academia_student</field>
+            <field name="res_model">academia.student</field>
             <field name="view_mode">tree,form</field>
         </record>
         <record model="ir.actions.act_window" id="act_config_academia">
             <field name="name">Materias</field>
-            <field name="res_model">academia_calificacion</field>
+            <field name="res_model">academia.calificacion</field>
             <field name="view_mode">tree,form</field>
         </record>
         <menuitem id="id_principal_academia" name="Odoo Práctica Academia"/>

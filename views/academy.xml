@@ -21,14 +21,18 @@
             <field name="arch" type="xml">
                 <form string="Listado de estudiantes">
                     <header>
+                        <button string="Confirmar" name="confirm" type="object" states="draft"/>
+                        <button string="Cancelar" name="cancel" type="object" states="draft"/>
+                        <button string="Egresar" name="done" type="object" states="process"/>
+                        <button string="Borrador" name="draft" type="object" states="cancel"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
-                        <field name="photo" widget="image" class="oe_avatar" options="{&quot;preview_image&quot;:
+                        <field name="photo" widget="image" class="oe_avatar oe_left" options="{&quot;preview_image&quot;:
                                                                                        &quot;image_medium&quot;,
                                                                                        &quot;size&quot;:[90, 90]}"/>
                         <group colspan="4">
-                            <field name="name"/>
+                            <field name="name" attrs="{'readonly':[('state', '!=', 'draft')]}"/>
                             <field name="last_name"/>
                             <field name="curp" placeholder="AACC901010HVZNLS00"/>
                             <field name="age"/>
@@ -50,6 +54,9 @@
                                             <field name="calificacion" required="True"></field>
                                         </tree>
                                     </field>
+                                    <group class="oe_subtotal_footer oe_right" colspan="2" name="grupo_promedio">
+                                        <field name="promedio"/>
+                                    </group>
                                 </page>
                                 <page string="Comentarios">
                                     <field name="note"/>

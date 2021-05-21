@@ -13,7 +13,9 @@ class academia_grado(models.Model):
     def calculate_name(self):
         complete_name = self.name + " / " + self.group
         self.complete_name = complete_name
-    
+        
+    _rec_name = 'complete_name'
+
     name = fields.Selection([
         ('1', 'Primero'),
         ('2', 'Segundo'),
@@ -46,6 +48,17 @@ class academia_student(models.Model):
     def _get_school_default(self):
         school_id = self.env['res.partner'].search([('name', '=', 'Escuela comodin')])
         return school_id
+    @api.depends('calificaciones_id')
+    def calcular_promedio(self):
+        acum = 0.0
+        
+        if len(self.calificaciones_id) > 0:
+            for xcal in self.calificaciones_id:
+                acum += xcal.calificacion
+                if acum:
+                    self.promedio = acum/len(self.calificaciones_id)
+        else:
+            self.promedio = 0.0
 
     name = fields.Char('Nombre', size=128, required=True, track_visibility='onchange')
     last_name = fields.Char('Apellido', size=128, copy=False, track_visibility='onchange')
@@ -56,9 +69,10 @@ class academia_student(models.Model):
     curp = fields.Char('curp', size=18, copy=False)
     age = fields.Integer('Edad', track_visibility='onchange')
     state = fields.Selection([
-        ('draf', 'Documento borrador'),
-        ('prodcess', 'Proceso'),
-        ('done', 'Egresado')],'Estado')
+        ('draft', 'Documento borrador'),
+        ('process', 'Proceso'),
+        ('cancel', 'Expulsado'),
+        ('done', 'Egresado')],'Estado', default="draft")
     
     ## relacionales
     partner_id = fields.Many2one('res.partner', 'Escuela', default=_get_school_default)
@@ -73,6 +87,7 @@ class academia_student(models.Model):
     )
 
     grado_id = fields.Many2one('academia.grado', 'Grado')
+    promedio = fields.Float('Promedio', digits=(3,2), compute="calcular_promedio")
 
     @api.onchange('grado_id')
     def onchange_grado(self):
@@ -128,6 +143,22 @@ class academia_student(models.Model):
         return res
     _order = "name"
     _defaults = {
-        "state": "draft",
         "active": True
     }
+    
+    def confirm(self):
+        self.state = 'process'
+        return True
+    
+    def done(self):
+        self.state = 'done'
+        return True
+    
+    def cancel(self):
+        self.state = 'cancel'
+        return True
+    
+    def draft(self):
+        self.state = 'draft'
+        return True
+    

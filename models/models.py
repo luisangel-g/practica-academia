@@ -8,10 +8,11 @@ class ResPartner(models.Model):
     student_id = fields.Many2one('academia.student','Estudiante')
 
 class academia_student(models.Model):
+    _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
     _name = "academia.student"
     _description = "Modelo para formación de estudiantes"
     
-    name = fields.Char('Nombre', size=128, required=True)
+    name = fields.Char('Nombre', size=128, required=True, track_visibility='onchange')
     last_name = fields.Char('Apellido', size=128)
     photo = fields.Binary('Fotografia')
     create_date = fields.Datetime('Fecha de creación', readonly=True)
@@ -27,6 +28,8 @@ class academia_student(models.Model):
     ## relacionales
     partner_id = fields.Many2one('res.partner', 'Escuela')
     country = fields.Many2one('res.country', 'Pais', related="partner_id.country_id")
+
+    #invoice_ids = fields.Many2many('account.invoice', 'student_invoice_rel', 'student_id', 'invoice_id', 'Facturas')
 
     calificaciones_id = fields.One2many(
         'academia.calificacion',

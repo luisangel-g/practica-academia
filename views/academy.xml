@@ -39,6 +39,9 @@
                         </group>
                         <group>
                             <notebook>
+                                <page string="Facturas">
+                                    <!--<field name="invoice_ids"/>-->
+                                </page>
                                 <page string="Calificaciones">
                                     <field name="calificaciones_id">
                                         <tree string="Calificaciones" editable="bottom">
@@ -53,6 +56,10 @@
                             </notebook>
                         </group>
                     </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
                 </form>
             </field>
         </record>

@@ -1,5 +1,35 @@
 from odoo import _, fields, models, api, exceptions
 
+class academia_materia_list(models.Model):
+    _name = 'academia.materia.list'
+    grado_id = fields.Many2one('academia.grado', 'ID Referencia')
+    materia_id = fields.Many2one('academia.materia', 'Materia', required=True)
+
+class academia_grado(models.Model):
+    _name = 'academia.grado'
+    _description = 'Modelo de los grados que tiene la escuela'
+
+    @api.depends('name', 'group')
+    def calculate_name(self):
+        complete_name = self.name + " / " + self.group
+        self.complete_name = complete_name
+    
+    name = fields.Selection([
+        ('1', 'Primero'),
+        ('2', 'Segundo'),
+        ('3', 'Tercero'),
+        ('4', 'Cuarto'),
+        ('5', 'Quinto'),
+        ('6', 'Sexto'),
+    ], 'Grado', required=True)
+    group = fields.Selection([
+        ('a', 'A'),
+        ('b', 'B'),
+        ('c', 'C')
+    ], 'Grupo', required=True)
+
+    materia_ids = fields.One2many('academia.materia.list', 'grado_id', 'Materias')
+    complete_name = fields.Char('Nombre completo', size=128, compute="calculate_name", store=True)
 class ResPartner(models.Model):
     _name = "res.partner"
     _inherit = "res.partner"
@@ -18,13 +48,13 @@ class academia_student(models.Model):
         return school_id
 
     name = fields.Char('Nombre', size=128, required=True, track_visibility='onchange')
-    last_name = fields.Char('Apellido', size=128, copy=False)
+    last_name = fields.Char('Apellido', size=128, copy=False, track_visibility='onchange')
     photo = fields.Binary('Fotografia')
     create_date = fields.Datetime('Fecha de creación', readonly=True)
     note = fields.Html('Comentarios')
     active = fields.Boolean('Activo')
     curp = fields.Char('curp', size=18, copy=False)
-    age = fields.Integer('Edad')
+    age = fields.Integer('Edad', track_visibility='onchange')
     state = fields.Selection([
         ('draf', 'Documento borrador'),
         ('prodcess', 'Proceso'),
@@ -41,11 +71,20 @@ class academia_student(models.Model):
         'student_id',
         'Calificaciones'
     )
-    @api.constrains('curp')
-    def _check_curp(self):
-        if len(self.curp) != 18:
-            raise exceptions.ValidationError('La curp debe ser 18 digitos')
-            
+
+    grado_id = fields.Many2one('academia.grado', 'Grado')
+
+    @api.onchange('grado_id')
+    def onchange_grado(self):
+        calificaciones_list = []
+        for materia in self.grado_id.materia_ids:
+            xval = (0,0,{
+                'name': materia.materia_id.id,
+                'calificacion': 5
+            })
+            calificaciones_list.append(xval)
+        self.update({'calificaciones_id': calificaciones_list})
+
     #@api.model
     #def write(self, values):
     #    if 'curp' in values:
@@ -54,7 +93,11 @@ class academia_student(models.Model):
     #        })
     #        return super(academia_student, self).write(values)
     #        
-   
+    @api.constrains('curp')
+    def _check_curp(self):
+        if len(self.curp) != 18:
+            raise exceptions.ValidationError('La curp debe ser 18 digitos')
+    
     @api.model
     def create(self, values):
         if values['name']:

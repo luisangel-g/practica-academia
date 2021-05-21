@@ -36,6 +36,7 @@
                             <field name="active"/>
                             <field name="partner_id"/>
                             <field name="country"/>
+                            <field name="grado_id"/>
                         </group>
                         <group>
                             <notebook>
@@ -73,10 +74,57 @@
             <field name="res_model">academia.calificacion</field>
             <field name="view_mode">tree,form</field>
         </record>
+        
+        <record model="ir.actions.act_window" id="act_config_grados">
+            <field name="name">Grados</field>
+            <field name="res_model">academia.grado</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        
+        <record model="ir.ui.view" id="tree_grado_id">
+            <field name="name">academia.grado.tree</field>
+            <field name="model">academia.grado</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Grados">
+                    <field name="complete_name"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="academia_grado">
+            <field name="name">academia.grado.form</field>
+            <field name="model">academia.grado</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Grado">
+                    <header></header>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="group"/>
+                        </group>
+                        <notebook>
+                            <page>
+                                <field name="materia_ids">
+                                    <tree string="Materias" editable="bottom">
+                                        <field name="materia_id"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
         <menuitem id="id_principal_academia" name="Odoo Práctica Academia"/>
+
         <menuitem id="id_menu_student" parent="id_principal_academia" name="Registros" sequence="0"/>
-        <menuitem id="id_menu_student_act" parent="id_principal_academia" name="Estudiantes" action="act_student_academia" sequence="0"/>
+        <menuitem id="id_menu_student_act" parent="id_menu_student" name="Estudiantes" action="act_student_academia" sequence="0"/>
+        
         <menuitem id="id_menu_config" parent="id_principal_academia" name="Configuracion" sequence="1"/>
-        <menuitem id="id_menu_config_act" parent="id_menu_config" action="act_config_academia" sequence="0"/>
+        <menuitem id="id_menu_config_act" parent="id_menu_config" name="Materias" action="act_config_academia" sequence="0"/>
+
+        <menuitem id="id_menu_grado_act" parent="id_menu_config" name="Grados" action="act_config_grados" sequence="0"/>
     </data>
 </odoo>

@@ -12,13 +12,18 @@ class academia_student(models.Model):
     _name = "academia.student"
     _description = "Modelo para formación de estudiantes"
     
+    @api.model
+    def _get_school_default(self):
+        school_id = self.env['res.partner'].search([('name', '=', 'Escuela comodin')])
+        return school_id
+
     name = fields.Char('Nombre', size=128, required=True, track_visibility='onchange')
-    last_name = fields.Char('Apellido', size=128)
+    last_name = fields.Char('Apellido', size=128, copy=False)
     photo = fields.Binary('Fotografia')
     create_date = fields.Datetime('Fecha de creación', readonly=True)
     note = fields.Html('Comentarios')
     active = fields.Boolean('Activo')
-    curp = fields.Char('curp', size=18)
+    curp = fields.Char('curp', size=18, copy=False)
     age = fields.Integer('Edad')
     state = fields.Selection([
         ('draf', 'Documento borrador'),
@@ -26,7 +31,7 @@ class academia_student(models.Model):
         ('done', 'Egresado')],'Estado')
     
     ## relacionales
-    partner_id = fields.Many2one('res.partner', 'Escuela')
+    partner_id = fields.Many2one('res.partner', 'Escuela', default=_get_school_default)
     country = fields.Many2one('res.country', 'Pais', related="partner_id.country_id")
 
     #invoice_ids = fields.Many2many('account.invoice', 'student_invoice_rel', 'student_id', 'invoice_id', 'Facturas')
@@ -49,7 +54,7 @@ class academia_student(models.Model):
     #        })
     #        return super(academia_student, self).write(values)
     #        
-    
+   
     @api.model
     def create(self, values):
         if values['name']:

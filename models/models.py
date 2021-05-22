@@ -7,25 +7,53 @@ class make_student_invoices(models.TransientModel):
     journal_id =fields.Many2one('account.journal', 'Diario', domain="[('type','=','sale')]")
     
     def make_invoices(self):
-        active_ids = self._context['active_ids']
+        active_ids = [self._context['active_ids']]
+        print("active_ids")
+        print(active_ids)
         category_obj = self.env['product.category']
         category_id = category_obj.search([('name','=','Factura colegiatura')])
         
-        student_br = self.env['academia.student'].search(['id','=',active_ids])
-        
-        if category_id:
-            product_obj = self.env['product.product']
-            product_ids = product_obj.search([('categ_id', '=', category_id.id)])
-            invoice_obj = self.env['account.invoice']
+        for st_id in active_ids:
+            print("st_id")
+            print(st_id)
+            student_br = self.env['academia.student'].search([('id', '=', st_id)])
+            print("student_br")
+            print(student_br)
+            if student_br.state in ('draft', 'cancel'):
+                raise exceptions.ValidationError('No puedes generar una factura para Estudante expulsado o en borrador')  
+            if category_id:
+                product_obj = self.env['product.product']
+                product_ids = product_obj.search([('categ_id', '=', category_id.id)])
+                invoice_obj = self.env['account.move']
+                
+                partner_br = self.env['res.partner'].search([('student_id', '=', student_br.id)])
+                partner_id = False
+                if partner_br:
+                    partner_id = partner_br[0].id
+                invoice_lines = []
+                for pr in product_ids:
+                    xline = (0,0,{
+                        'product_id' : pr.id,
+                        'price_unit' : pr.list_price,
+                        'quantity' : 1,
+                        'account_id' : pr.categ_id.property_account_income_categ_id.id,
+                        'name' : pr.name + " [" + str(pr.default_code) + "]",
+                    })
+                    
+                    invoice_lines.append(xline)
+                    print(invoice_lines)
+                print("partner_id")
+                print(partner_id)
+                vals = {
+                    'partner_id' : partner_id,
+                    'invoice_line_ids' : invoice_lines,
+                }
+                print("vals")
+                print(vals)
+                invoice_id = invoice_obj.sudo().create(vals)
+                print("invoice_id")
+                print(invoice_id)
             
-            partner_br = self.env['res.partner'].search([('student_id', '=', student_br.id)])
-            partner_id = False
-            if partner_br:
-                partner_id = partner_br[0].id
-            vals = {
-                'partner_id' : partner_id,
-                'account_id' : partner_br[0].property_account_receivable_id.id  
-            }
         return True
 
 class academia_materia_list(models.Model):
@@ -156,6 +184,7 @@ class academia_student(models.Model):
         vals_to_partner = {
             'name': res['name']+" "+res['last_name'],
             'company_type': "student_id",
+            'student_id' : res["id"]
         }
         print(vals_to_partner)
         partner = partner_obj.create(vals_to_partner)
@@ -202,4 +231,5 @@ class academia_student(models.Model):
             'view_type': 'form',
             'target': 'new',
             'key2': "client_action_multi",
+            'context':  {'active_ids': self.id}
             }

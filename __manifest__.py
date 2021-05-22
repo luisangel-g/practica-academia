@@ -1,7 +1,7 @@
 {
     "name": "Modulo de desarrollo",
     "version": "14.0",
-    "depends": ["base", "sale_management", "account"],
+    "depends": ["base", "sale_management", "account", "stock"],
     "author": (
         "Luis Angel"
     ),

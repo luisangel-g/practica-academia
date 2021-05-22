@@ -1,10 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <record id="wizard_student_invoice" model="ir.ui.view">
+            <field name="name">make.student.invoices.form</field>
+            <field name="model">make.student.invoices</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Asistente para la generación de facturas">
+                    <header></header>
+                    <sheet>
+                        <separator string="Introduce el diario para la factura"/>
+                        <field name="journal_id" required="True"/>
+                    </sheet>
+                    <footer>
+                        <div align="center">
+                            <button name="make_invoices" string="Generar" type="object"/>
+                            <button special="cancel" string="Cerrar" type="object"/>
+                        </div>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="product.category" id="category_student">
+            <field name="name">Factura colegiatura</field>
+        </record>
+        
         <record model="ir.ui.view" id="tree_student_id">
             <field name="name">academia.student.tree</field>
             <field name="model">academia.student</field>
-            <field name="type"></field>
+            <field name="type">tree</field>
             <field name="arch" type="xml">
                 <tree string="Listado de estudiantes">
                     <field name="name"/>
@@ -21,6 +46,8 @@
             <field name="arch" type="xml">
                 <form string="Listado de estudiantes">
                     <header>
+                        <button string="Generación de facturas" name="generar" type="object" class="oe_highlight"/>
+                        
                         <button string="Confirmar" name="confirm" type="object" states="draft"/>
                         <button string="Cancelar" name="cancel" type="object" states="draft"/>
                         <button string="Egresar" name="done" type="object" states="process"/>
@@ -45,7 +72,7 @@
                         <group>
                             <notebook>
                                 <page string="Facturas">
-                                    <!--<field name="invoice_ids"/>-->
+                                    <field name="invoice_ids"/>
                                 </page>
                                 <page string="Calificaciones">
                                     <field name="calificaciones_id">

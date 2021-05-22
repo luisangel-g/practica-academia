@@ -1,7 +1,37 @@
 from odoo import _, fields, models, api, exceptions
 
+class make_student_invoices(models.TransientModel):
+    _name = 'make.student.invoices'
+    _description = 'Asistente para la generación de facturas'
+
+    journal_id =fields.Many2one('account.journal', 'Diario', domain="[('type','=','sale')]")
+    
+    def make_invoices(self):
+        active_ids = self._context['active_ids']
+        category_obj = self.env['product.category']
+        category_id = category_obj.search([('name','=','Factura colegiatura')])
+        
+        student_br = self.env['academia.student'].search(['id','=',active_ids])
+        
+        if category_id:
+            product_obj = self.env['product.product']
+            product_ids = product_obj.search([('categ_id', '=', category_id.id)])
+            invoice_obj = self.env['account.invoice']
+            
+            partner_br = self.env['res.partner'].search([('student_id', '=', student_br.id)])
+            partner_id = False
+            if partner_br:
+                partner_id = partner_br[0].id
+            vals = {
+                'partner_id' : partner_id,
+                'account_id' : partner_br[0].property_account_receivable_id.id  
+            }
+        return True
+
 class academia_materia_list(models.Model):
     _name = 'academia.materia.list'
+    _description = 'academia materia list'
+
     grado_id = fields.Many2one('academia.grado', 'ID Referencia')
     materia_id = fields.Many2one('academia.materia', 'Materia', required=True)
 
@@ -61,13 +91,13 @@ class academia_student(models.Model):
             self.promedio = 0.0
 
     name = fields.Char('Nombre', size=128, required=True, track_visibility='onchange')
-    last_name = fields.Char('Apellido', size=128, copy=False, track_visibility='onchange')
+    last_name = fields.Char('Apellido', size=128, copy=False)
     photo = fields.Binary('Fotografia')
     create_date = fields.Datetime('Fecha de creación', readonly=True)
     note = fields.Html('Comentarios')
     active = fields.Boolean('Activo')
     curp = fields.Char('curp', size=18, copy=False)
-    age = fields.Integer('Edad', track_visibility='onchange')
+    age = fields.Integer('Edad')
     state = fields.Selection([
         ('draft', 'Documento borrador'),
         ('process', 'Proceso'),
@@ -78,7 +108,7 @@ class academia_student(models.Model):
     partner_id = fields.Many2one('res.partner', 'Escuela', default=_get_school_default)
     country = fields.Many2one('res.country', 'Pais', related="partner_id.country_id")
 
-    #invoice_ids = fields.Many2many('account.invoice', 'student_invoice_rel', 'student_id', 'invoice_id', 'Facturas')
+    invoice_ids = fields.One2many('account.move.line', 'move_id', 'Facturas')
 
     calificaciones_id = fields.One2many(
         'academia.calificacion',
@@ -162,3 +192,14 @@ class academia_student(models.Model):
         self.state = 'draft'
         return True
     
+    def generar(self):	
+        return {
+            'name': 'Generación de facturas',
+            'res_model': 'make.student.invoices',
+            'type': 'ir.actions.act_window',
+            'view_id': self.env.ref('modulo-practica.wizard_student_invoice').id,
+            'view_mode': 'form',
+            'view_type': 'form',
+            'target': 'new',
+            'key2': "client_action_multi",
+            }

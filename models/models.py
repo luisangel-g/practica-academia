@@ -32,6 +32,7 @@ class make_student_invoices(models.TransientModel):
                     partner_id = partner_br[0].id
                 invoice_lines = []
                 for pr in product_ids:
+                    print("*********pr:", str(pr.default_code))
                     xline = (0,0,{
                         'product_id' : pr.id,
                         'price_unit' : pr.list_price,
@@ -46,14 +47,17 @@ class make_student_invoices(models.TransientModel):
                 print(partner_id)
                 vals = {
                     'partner_id' : partner_id,
+                    'invoice_payment_term_id': 7,
+                    'move_type': 'out_invoice',
                     'invoice_line_ids' : invoice_lines,
                 }
                 print("vals")
                 print(vals)
-                invoice_id = invoice_obj.sudo().create(vals)
+                invoice_id = self.env['account.move'].create(vals)
+                #invoice_id.post()
                 print("invoice_id")
                 print(invoice_id)
-            
+
         return True
 
 class academia_materia_list(models.Model):
@@ -106,6 +110,12 @@ class academia_student(models.Model):
     def _get_school_default(self):
         school_id = self.env['res.partner'].search([('name', '=', 'Escuela comodin')])
         return school_id
+    @api.depends('invoice_ids')
+    def calcular_amount(self):
+        acum = 0.0
+        for xcal in self.invoice_ids:
+            if acum:
+                self.amount_invoice = acum
     @api.depends('calificaciones_id')
     def calcular_promedio(self):
         acum = 0.0
@@ -136,7 +146,10 @@ class academia_student(models.Model):
     partner_id = fields.Many2one('res.partner', 'Escuela', default=_get_school_default)
     country = fields.Many2one('res.country', 'Pais', related="partner_id.country_id")
 
-    invoice_ids = fields.One2many('account.move.line', 'move_id', 'Facturas')
+    invoice_ids = fields.Many2many('account.move',
+                                    'student_invoice_rel',
+                                    'student_id', 'journal_id',
+                                    'Facturas')
 
     calificaciones_id = fields.One2many(
         'academia.calificacion',
@@ -146,6 +159,7 @@ class academia_student(models.Model):
 
     grado_id = fields.Many2one('academia.grado', 'Grado')
     promedio = fields.Float('Promedio', digits=(3,2), compute="calcular_promedio")
+    amount_invoice = fields.Float('Monto Facturado', digits=(14,2), compute="calcular_amount", store=True)
 
     @api.onchange('grado_id')
     def onchange_grado(self):
@@ -183,8 +197,8 @@ class academia_student(models.Model):
         partner_obj = self.env['res.partner']
         vals_to_partner = {
             'name': res['name']+" "+res['last_name'],
-            'company_type': "student_id",
-            'student_id' : res["id"]
+            'company_type': "student_id", 
+            'student_id': res['id'],
         }
         print(vals_to_partner)
         partner = partner_obj.create(vals_to_partner)
@@ -221,15 +235,17 @@ class academia_student(models.Model):
         self.state = 'draft'
         return True
     
-    def generar(self):	
+    def generar(self):  
         return {
             'name': 'Generación de facturas',
             'res_model': 'make.student.invoices',
             'type': 'ir.actions.act_window',
-            'view_id': self.env.ref('modulo-practica.wizard_student_invoice').id,
+            'view_id': self.env.ref('modulo_practica_academia.wizard_student_invoice').id,
             'view_mode': 'form',
             'view_type': 'form',
             'target': 'new',
             'key2': "client_action_multi",
             'context':  {'active_ids': self.id}
             }
+
+        

@@ -26,6 +26,30 @@
             <field name="name">Factura colegiatura</field>
         </record>
         
+        <record model="ir.ui.view" id="pivot_student_tree">
+            <field name="name">academia.student.pivot</field>
+            <field name="model">academia.student</field>
+            <field name="type">pivot</field>
+            <field name="arch" type="xml">
+                <pivot string="Facturación por escuela">
+                    <field name="create_date" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="amount_invoice" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="graph_student_tree">
+            <field name="name">academia.student.graph</field>
+            <field name="model">academia.student</field>
+            <field name="type">graph</field>
+            <field name="arch" type="xml">
+                <pivot string="Facturación por escuela">
+                    <field name="partner_id" type="row"/>
+                    <field name="amount_invoice" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
         <record model="ir.ui.view" id="tree_student_id">
             <field name="name">academia.student.tree</field>
             <field name="model">academia.student</field>
@@ -39,31 +63,6 @@
                 </tree>
             </field>
         </record>
-        <!--
-        <record model="ir.ui.view" id="tree_student_tree">
-            <field name="name">academia.student.pivot</field>
-            <field name="model">academia.student</field>
-            <field name="type">pivot</field>
-            <field name="arch" type="xml">
-                <pivot string="Facturacion por escuela">
-                    <field name="create_date" type="row"/>
-                    <field name="partner_id" type="row"/>
-                    <field name="amount_invoice" type="measure"/>
-                </pivot>
-            </field>
-        </record>
-        <record model="ir.ui.view" id="graph_student_tree">
-            <field name="name">academia.student.graph</field>
-            <field name="model">academia.student</field>
-            <field name="type">graph</field>
-            <field name="arch" type="xml">
-                <pivot string="Facturacion por escuela">
-                    <field name="partner_id" type="row"/>
-                    <field name="amount_invoice" type="measure"/>
-                </pivot>
-            </field>
-        </record>
-        -->
         <record model="ir.ui.view" id="academy_student_form">
             <field name="name">academia.student.form</field>
             <field name="model">academia.student</field>
@@ -97,7 +96,7 @@
                         <group>
                             <notebook>
                                 <page string="Facturas">
-                                    <!--<field name="invoice_ids"/>-->
+                                    <field name="invoice_ids"/>
                                 </page>
                                 <page string="Calificaciones">
                                     <field name="calificaciones_id">
@@ -126,7 +125,7 @@
         <record model="ir.actions.act_window" id="act_student_academia">
             <field name="name">Registro de estudiantes</field>
             <field name="res_model">academia.student</field>
-            <field name="view_mode">tree,form<!--,pivot,graph--></field>
+            <field name="view_mode">tree,form,pivot,graph</field>
         </record>
         <record model="ir.actions.act_window" id="act_config_academia">
             <field name="name">Materias</field>
